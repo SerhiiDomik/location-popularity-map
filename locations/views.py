@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, filters
 from django.db.models import Avg, Prefetch, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Location, Review, ReviewReaction, ReactionType
@@ -44,7 +44,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class ReviewReactionViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewReactionSerializer
-    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return ReviewReaction.objects.filter(review_id=self.kwargs['review_pk'])
