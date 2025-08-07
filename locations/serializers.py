@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from rest_framework.validators import MaxValueValidator, MinValueValidator
-from .models import Location, Review, ReviewReaction
+from django.core.validators import MaxValueValidator, MinValueValidator
+from .models import Location, Review, ReviewReaction, ReactionType
 
 
 class ReviewReactionSerializer(serializers.ModelSerializer):
@@ -28,6 +28,12 @@ class ReviewSerializer(serializers.ModelSerializer):
             'like_count', 'dislike_count'
         ]
 
+    def get_like_count(self, obj):
+        return obj.reactions.filter(reaction=ReactionType.LIKE).count()
+
+    def get_dislike_count(self, obj):
+        return obj.reactions.filter(reaction=ReactionType.DISLIKE).count()
+
     def validate(self, data):
         comment = data.get('comment', '')
         if not comment.strip():
@@ -35,15 +41,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
-class LocationSerializer(serializers.ModelSerializer):
-    reviews = ReviewSerializer(many=True, read_only=True)
+class LocationListSerializer(serializers.ModelSerializer):
     average_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Location
         fields = [
-            'id', 'name', 'description', 'category',
-            'created_at', 'average_rating', 'reviews',
+            'id', 'name', 'category',
+            'created_at', 'average_rating',
         ]
 
     def validate(self, data):
@@ -67,3 +72,14 @@ class LocationSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return data
+
+
+class LocationDetailSerializer(LocationListSerializer):
+    reviews = ReviewSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Location
+        fields = [
+            'id', 'name', 'description', 'category',
+            'created_at', 'average_rating', 'reviews',
+        ]

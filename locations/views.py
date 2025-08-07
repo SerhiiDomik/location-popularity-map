@@ -1,35 +1,41 @@
 from rest_framework import viewsets, permissions, filters
-from django.db.models import Avg, Prefetch
+from django.db.models import Avg, Prefetch, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Location, Review, ReviewReaction
-from .serializers import LocationSerializer, ReviewSerializer, ReviewReactionSerializer
+from .models import Location, Review, ReviewReaction, ReactionType
+from .serializers import (
+    ReviewSerializer,
+    ReviewReactionSerializer,
+    LocationListSerializer,
+    LocationDetailSerializer
+)
+
 from .filters import LocationFilter
 
 
 class LocationViewSet(viewsets.ModelViewSet):
-    serializer_class = LocationSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = LocationFilter
     search_fields = ['name', 'description']
 
-    queryset = Location.objects.all()
+    queryset = Location.objects.annotate(
+        average_rating=Avg('reviews__rating')
+    ).prefetch_related(
+        Prefetch('reviews', queryset=Review.objects.prefetch_related('reactions'))
+    )
 
-    def get_queryset(self):
-        return Location.objects.annotate(
-            average_rating=Avg('reviews__rating')
-        ).prefetch_related('reviews__reactions')
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return LocationListSerializer
+
+        return LocationDetailSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         return Review.objects.filter(
             location_id=self.kwargs['location_pk']
-        ).annotate(
-            like_count=Count('reactions', filter=Q(reactions__reaction=ReactionType.LIKE)),
-            dislike_count=Count('reactions', filter=Q(reactions__reaction=ReactionType.DISLIKE))
         ).prefetch_related('reactions')
 
     def perform_create(self, serializer):
@@ -38,7 +44,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class ReviewReactionViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewReactionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return ReviewReaction.objects.filter(review_id=self.kwargs['review_pk'])
