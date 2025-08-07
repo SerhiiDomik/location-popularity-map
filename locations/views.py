@@ -3,18 +3,26 @@ from io import BytesIO
 
 from django.core.cache import cache
 from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Avg, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Location, Review, ReviewReaction
+from .models import (
+    Location,
+    Review,
+    ReviewReaction,
+    LocationSubscription
+)
 from .serializers import (
     ReviewSerializer,
     ReviewReactionSerializer,
     LocationListSerializer,
-    LocationDetailSerializer
+    LocationDetailSerializer,
+    LocationSubscriptionSerializer,
 )
 from .filters import LocationFilter
 
@@ -94,8 +102,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return response
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, location_id=self.kwargs['location_pk'])
-        cache.delete(f"reviews:list:{self.kwargs['location_pk']}")
+        review = serializer.save(user=self.request.user, location_id=self.kwargs['location_pk'])
+
+        subscriptions = review.location.subscriptions.exclude(user=self.request.user)
+        emails = [sub.user.email for sub in subscriptions if sub.user.email]
+
+        if emails:
+            send_mail(
+                subject=f"New review for {review.location.name}",
+                message=f"User {review.user.username} left a new review:\n\n{review.comment}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=emails,
+                fail_silently=True,
+            )
+
 
 
 class ReviewReactionViewSet(viewsets.ModelViewSet):
@@ -120,3 +140,20 @@ class ReviewReactionViewSet(viewsets.ModelViewSet):
             defaults={'reaction': serializer.validated_data['reaction']}
         )
         cache.delete(f"reactions:list:{self.kwargs['review_pk']}")
+
+
+class LocationSubscriptionViewSet(viewsets.ModelViewSet):
+    serializer_class = LocationSubscriptionSerializer
+
+    def get_queryset(self):
+        location_pk = self.kwargs['location_pk']
+        return LocationSubscription.objects.filter(
+            user=self.request.user,
+            location_id=location_pk
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            user=self.request.user,
+            location_id=self.kwargs['location_pk']
+        )

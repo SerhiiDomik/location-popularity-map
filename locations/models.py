@@ -41,3 +41,15 @@ class ReviewReaction(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> Review {self.review.id} ({self.reaction})"
+
+
+class LocationSubscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='location_subscriptions')
+    location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='subscriptions')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'location')
+
+    def __str__(self):
+        return f"{self.user.username} subscribed to {self.location.name}"

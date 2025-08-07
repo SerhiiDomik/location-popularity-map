@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from django.core.validators import MaxValueValidator, MinValueValidator
-from .models import Location, Review, ReviewReaction, ReactionType
+from .models import (
+    Location,
+    Review,
+    ReviewReaction,
+    ReactionType,
+    LocationSubscription,
+)
 
 
 class ReviewReactionSerializer(serializers.ModelSerializer):
@@ -83,3 +89,10 @@ class LocationDetailSerializer(LocationListSerializer):
             'id', 'name', 'description', 'category',
             'created_at', 'average_rating', 'reviews',
         ]
+
+
+class LocationSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationSubscription
+        fields = ['id', 'user', 'location']
+        read_only_fields = ['user']
