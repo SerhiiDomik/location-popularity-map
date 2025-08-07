@@ -1,0 +1,19 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+venv/
+.venv/
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+
+# IDE files
+.idea/
+*.iml
