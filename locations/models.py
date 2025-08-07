@@ -19,7 +19,9 @@ class Location(models.Model):
 
 
 class Review(models.Model):
-    location = models.ForeignKey(Location, related_name='reviews', on_delete=models.CASCADE)
+    location = models.ForeignKey(
+        Location, related_name="reviews", on_delete=models.CASCADE
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.TextField(blank=False)
     rating = models.PositiveSmallIntegerField(
@@ -32,24 +34,30 @@ class Review(models.Model):
 
 
 class ReviewReaction(models.Model):
-    review = models.ForeignKey(Review, related_name='reactions', on_delete=models.CASCADE)
+    review = models.ForeignKey(
+        Review, related_name="reactions", on_delete=models.CASCADE
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     reaction = models.CharField(max_length=10, choices=ReactionType.choices)
 
     class Meta:
-        unique_together = ('review', 'user')
+        unique_together = ("review", "user")
 
     def __str__(self):
         return f"{self.user.username} -> Review {self.review.id} ({self.reaction})"
 
 
 class LocationSubscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='location_subscriptions')
-    location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='subscriptions')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="location_subscriptions"
+    )
+    location = models.ForeignKey(
+        "Location", on_delete=models.CASCADE, related_name="subscriptions"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'location')
+        unique_together = ("user", "location")
 
     def __str__(self):
         return f"{self.user.username} subscribed to {self.location.name}"

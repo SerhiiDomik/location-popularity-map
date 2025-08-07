@@ -54,12 +54,14 @@ class PasswordResetSerializer(serializers.Serializer):
         return value
 
     def save(self):
-        email = self.validated_data['email']
+        email = self.validated_data["email"]
         user = User.objects.get(email=email)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        reset_link = f"http://localhost:8000/reset-password-confirm/?uid={uid}&token={token}"
+        reset_link = (
+            f"http://localhost:8000/reset-password-confirm/?uid={uid}&token={token}"
+        )
         send_mail(
             subject="Password Reset",
             message=f"Click the link to reset your password: {reset_link}",

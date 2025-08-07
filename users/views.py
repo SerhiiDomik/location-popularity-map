@@ -9,7 +9,7 @@ from .serializers import (
     LoginSerializer,
     LogoutSerializer,
     PasswordResetSerializer,
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer,
 )
 
 
@@ -21,7 +21,6 @@ class RegisterView(generics.CreateAPIView):
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
-
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -36,7 +35,9 @@ class LogoutView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         logout(request)
-        return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Logged out successfully"}, status=status.HTTP_200_OK
+        )
 
 
 class PasswordResetView(generics.GenericAPIView):
@@ -46,7 +47,9 @@ class PasswordResetView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"detail": "Password reset email sent."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Password reset email sent."}, status=status.HTTP_200_OK
+        )
 
 
 class PasswordResetConfirmView(generics.GenericAPIView):
@@ -56,4 +59,6 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"detail": "Password has been reset."}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Password has been reset."}, status=status.HTTP_200_OK
+        )

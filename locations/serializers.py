@@ -15,7 +15,7 @@ class ReviewReactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReviewReaction
-        fields = ['id', 'reaction', 'user']
+        fields = ["id", "reaction", "user"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -30,8 +30,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = [
-            'id', 'user', 'comment', 'rating', 'created_at',
-            'like_count', 'dislike_count'
+            "id",
+            "user",
+            "comment",
+            "rating",
+            "created_at",
+            "like_count",
+            "dislike_count",
         ]
 
     def get_like_count(self, obj):
@@ -41,9 +46,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.reactions.filter(reaction=ReactionType.DISLIKE).count()
 
     def validate(self, data):
-        comment = data.get('comment', '')
+        comment = data.get("comment", "")
         if not comment.strip():
-            raise serializers.ValidationError({'comment': 'Comment cannot be empty.'})
+            raise serializers.ValidationError({"comment": "Comment cannot be empty."})
         return data
 
 
@@ -53,27 +58,30 @@ class LocationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = [
-            'id', 'name', 'category',
-            'created_at', 'average_rating',
+            "id",
+            "name",
+            "category",
+            "created_at",
+            "average_rating",
         ]
 
     def validate(self, data):
         errors = {}
-        name = data.get('name', '')
+        name = data.get("name", "")
         if not name.strip():
-            errors['name'] = 'Name cannot be empty.'
+            errors["name"] = "Name cannot be empty."
         elif len(name) > 255:
-            errors['name'] = 'Name is too long.'
+            errors["name"] = "Name is too long."
 
-        description = data.get('description', '')
+        description = data.get("description", "")
         if not description.strip():
-            errors['description'] = 'Description cannot be empty.'
+            errors["description"] = "Description cannot be empty."
 
-        category = data.get('category', '')
+        category = data.get("category", "")
         if not category.strip():
-            errors['category'] = 'Category cannot be empty.'
+            errors["category"] = "Category cannot be empty."
         elif len(category) > 100:
-            errors['category'] = 'Category is too long.'
+            errors["category"] = "Category is too long."
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -86,13 +94,18 @@ class LocationDetailSerializer(LocationListSerializer):
     class Meta:
         model = Location
         fields = [
-            'id', 'name', 'description', 'category',
-            'created_at', 'average_rating', 'reviews',
+            "id",
+            "name",
+            "description",
+            "category",
+            "created_at",
+            "average_rating",
+            "reviews",
         ]
 
 
 class LocationSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationSubscription
-        fields = ['id', 'user', 'location']
-        read_only_fields = ['user']
+        fields = ["id", "user", "location"]
+        read_only_fields = ["user"]
