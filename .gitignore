@@ -17,3 +17,5 @@ media/
 # IDE files
 .idea/
 *.iml
+
+.env
