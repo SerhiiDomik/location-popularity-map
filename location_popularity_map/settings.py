@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_filters",
     "locations",
     "users",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -148,6 +149,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Мапа популярності локацій",
+    "DESCRIPTION": "API для перегляду, оцінювання та керування локаціями",
+    "VERSION": "1.0.0",
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Avg, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from .models import Location, Review, ReviewReaction, LocationSubscription
 from .serializers import (
@@ -48,6 +49,11 @@ class LocationViewSet(viewsets.ModelViewSet):
     def _set_cache(self, key, value, timeout=CACHE_TIMEOUT_SHORT):
         cache.set(key, value, timeout)
 
+    @extend_schema(
+        summary="Отримати список локацій",
+        description="Повертає закешований список локацій з фільтрами та пошуком",
+        responses=LocationListSerializer(many=True),
+    )
     def list(self, request, *args, **kwargs):
         key = f"locations:list:{request.get_full_path()}"
         cached = self._get_cache(key)
@@ -57,6 +63,10 @@ class LocationViewSet(viewsets.ModelViewSet):
         self._set_cache(key, response.data)
         return response
 
+    @extend_schema(
+        summary="Отримати детальну інформацію про локацію",
+        responses=LocationDetailSerializer,
+    )
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs["pk"]
         key = f"locations:detail:{pk}"
@@ -67,6 +77,11 @@ class LocationViewSet(viewsets.ModelViewSet):
         self._set_cache(key, response.data)
         return response
 
+    @extend_schema(
+        summary="Експортувати всі локації у форматі CSV",
+        description="Повертає CSV-файл зі списком локацій",
+        responses={200: OpenApiResponse(description="CSV файл")},
+    )
     @action(detail=False, methods=["get"], url_path="export")
     def export_locations(self, request):
         key = "locations:export_csv"
